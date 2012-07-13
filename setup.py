@@ -34,16 +34,14 @@ setup(name='ed25519ll',
       tests_require = requires,
       test_suite = 'nose.collector',
       ext_modules=[
-          Extension('ed25519ll._ed25519%s' % plat_name,
-              sources = """
-                    ed25519-supercop-ref/ed25519.c
-                    ed25519-supercop-ref/fe25519.c
-                    ed25519-supercop-ref/ge25519.c
-                    ed25519-supercop-ref/sc25519.c
-                    ed25519-supercop-ref/sha512-blocks.c
-                    ed25519-supercop-ref/sha512-hash.c
-                    ed25519-supercop-ref/test.c
-                    ed25519-supercop-ref/verify.c""".splitlines(),
+          Extension('ed25519ll._ed25519_%s' % plat_name,
+              sources = ["ed25519-supercop-ref/ed25519.c",
+                    "ed25519-supercop-ref/fe25519.c",
+                    "ed25519-supercop-ref/ge25519.c",
+                    "ed25519-supercop-ref/sc25519.c",
+                    "ed25519-supercop-ref/sha512-blocks.c",
+                    "ed25519-supercop-ref/sha512-hash.c",
+                    "ed25519-supercop-ref/verify.c"],
               include_dirs = ['ed25519-supercop-ref',]
           )
       ]
