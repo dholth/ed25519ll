@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
+import pkg_resources
+from distutils.util import get_platform
+
+plat_name = get_platform().replace('-', '_')
+lib_filename = pkg_resources.resource_filename('ed25519ll', '_ed25519_%s.so' % plat_name)
 
 from cffi import FFI
 ffi = FFI()
@@ -19,10 +24,10 @@ decl = """
         
 ffi.cdef(decl)
 
-verify = True
+verify = False
 
 if not verify:
-    ed25519 = ffi.dlopen("./libed25519.so.1")    
+    ed25519 = ffi.dlopen(lib_filename)
 else:
     # set LIBRARY_PATH to pwd or use -L
     ed25519 = ffi.verify(decl, libraries=["ed25519"]) # library_dirs = []
