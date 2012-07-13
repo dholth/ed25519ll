@@ -1,0 +1,10 @@
+syntax:glob
+*~
+.*
+*.pyc
+*.o
+*.so
+*.egg-info/*
+_build/*
+build/*
+__pycache__
