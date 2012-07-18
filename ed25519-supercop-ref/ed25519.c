@@ -39,6 +39,8 @@ int crypto_sign_keypair(
   ge25519_pack(pk, &gepk);
   for(i=0;i<32;i++)
     sk[32 + i] = pk[i];
+  for(i=0;i<32;i++)
+    sk[i] = seed[i];
   return 0;
 }
 
