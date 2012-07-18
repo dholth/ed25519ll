@@ -9,7 +9,7 @@ from distutils.util import get_platform
 from collections import namedtuple
 try:
     import sysconfig
-except ImportError:
+except ImportError: # pragma no cover
     from distutils import sysconfig
     
 __all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair']
@@ -38,7 +38,7 @@ if not verify:
     lib_filename = pkg_resources.resource_filename('ed25519ll', '_ed25519_%s%s' %
                                                    (plat_name, so_suffix))
     _ed25519 = ffi.dlopen(os.path.abspath(lib_filename))
-else:
+else: # pragma no cover
     # set LIBRARY_PATH to pwd or use -L
     _ed25519 = ffi.verify(decl, libraries=["ed25519"]) # library_dirs = []
 
@@ -52,19 +52,19 @@ def _ffi_tobytes(c, size):
 Keypair = namedtuple('Keypair', ('pk', 'sk'))
 
 def crypto_sign_keypair(seed=None):
-    """Return (public, private key) from a random seed, or os.urandom(32)"""
+    """Return (public, private key) from a given seed, or os.urandom(32)"""
     pk = ffi.new('unsigned char[32]')
     sk = ffi.new('unsigned char[64]')
     if seed is None:
         seed = os.urandom(PUBLICKEYBYTES)
     else:
-        warnings.warn("ed25519ll should choose random seed except in unit tests",
+        warnings.warn("ed25519ll should choose random seed.",
                       RuntimeWarning)
     if len(seed) != 32:
-        raise ValueError("seed must be 32 random bytes or None")
+        raise ValueError("seed must be 32 random bytes or None.")
     s = ffi.new('unsigned char[32]', map(ord, seed))
     rc = _ed25519.crypto_sign_keypair(pk, sk, s)
-    if rc != 0:
+    if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
     return Keypair(_ffi_tobytes(pk, len(pk)), _ffi_tobytes(sk, len(sk)))
 
@@ -81,21 +81,20 @@ def crypto_sign(msg, sk):
     sig_and_msg_len = ffi.new('unsigned long long')
     # sign a message
     rc = _ed25519.crypto_sign(sig_and_msg, sig_and_msg_len, m, len(m), sk)
-    if rc != 0:
+    if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
     return _ffi_tobytes(sig_and_msg, sig_and_msg_len[0])
 
 
 def crypto_sign_open(signed, pk):
-    """Return message given a signed message."""
-    assert len(pk) == PUBLICKEYBYTES
-    pk = ffi.new('unsigned char[]', map(ord, pk))
-    sig_and_msg = ffi.new('unsigned char[]', map(ord, signed))
-    msg = ffi.new('unsigned char[%d]' % (len(signed) + SIGNATUREBYTES))
-    msg_len = ffi.new('unsigned long long', len(msg))
-    rc = _ed25519.crypto_sign_open(msg, msg_len, sig_and_msg, len(sig_and_msg),
-                                   pk)
+    """Return message given a signed message signature+message."""
+    assert len(pk) == PUBLICKEYBYTES    
+    sm = ffi.new('unsigned char[]', map(ord, signed))
+    vk = ffi.new('unsigned char[]', map(ord, pk))
+    newmsg = ffi.new('unsigned char[]', len(signed))
+    newmsg_len = ffi.new('unsigned long long') # a pointer
+    rc = _ed25519.crypto_sign_open(newmsg, newmsg_len, sm, len(sm), vk)
     if rc != 0:
-        raise ValueError("rc != 0", rc)
-    return _ffi_tobytes(msg, msg_len[0])
+        raise ValueError("rc != 0", rc)    
+    return _ffi_tobytes(newmsg, newmsg_len[0])
 
