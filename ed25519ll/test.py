@@ -11,7 +11,7 @@ def test_ed25519ll():
     @raises(ValueError)
     def open_corrupt(): 
         corrupt = signed[ed25519ll.SIGNATUREBYTES:] + b'U' + signed[ed25519ll.SIGNATUREBYTES+1:]
-        ed25519ll.crypto_sign_open(corrupt, kp.pk)                
+        ed25519ll.crypto_sign_open(corrupt, kp.vk)                
     open_corrupt()
     
     @raises(AssertionError)
@@ -19,7 +19,7 @@ def test_ed25519ll():
         signed = ed25519ll.crypto_sign(msg, kp.sk[:-1])
     short_sk()
     
-    ed25519ll.crypto_sign_open(signed, kp.pk)
+    ed25519ll.crypto_sign_open(signed, kp.vk)
     
 def test_cover_warn_seed():
     ed25519ll.crypto_sign_keypair('*'*32)

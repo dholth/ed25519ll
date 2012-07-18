@@ -12,7 +12,8 @@ try:
 except ImportError: # pragma no cover
     from distutils import sysconfig
     
-__all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair']
+__all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair', 'Keypair',
+           'PUBLICKEYBYTES', 'SECRETKEYBYTES', 'SIGNATUREBYTES']
 
 from cffi import FFI
 ffi = FFI()
@@ -49,10 +50,10 @@ SIGNATUREBYTES=64
 def _ffi_tobytes(c, size):
     return bytes(ffi.buffer(c, size))
 
-Keypair = namedtuple('Keypair', ('pk', 'sk'))
+Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 
 def crypto_sign_keypair(seed=None):
-    """Return (public, private key) from a given seed, or os.urandom(32)"""
+    """Return (verifying, secret) key from a given seed, or os.urandom(32)"""
     pk = ffi.new('unsigned char[32]')
     sk = ffi.new('unsigned char[64]')
     if seed is None:
@@ -77,20 +78,18 @@ def crypto_sign(msg, sk):
     sk = ffi.new('unsigned char[]', map(ord, sk))
     m = ffi.new('unsigned char[]', map(ord, msg))
     sig_and_msg = ffi.new('unsigned char[]', (len(msg) + SIGNATUREBYTES))
-    # if I don't want a pointer, ffi.cast("unsigned long long", 42)
     sig_and_msg_len = ffi.new('unsigned long long')
-    # sign a message
     rc = _ed25519.crypto_sign(sig_and_msg, sig_and_msg_len, m, len(m), sk)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
     return _ffi_tobytes(sig_and_msg, sig_and_msg_len[0])
 
 
-def crypto_sign_open(signed, pk):
-    """Return message given a signed message signature+message."""
-    assert len(pk) == PUBLICKEYBYTES    
+def crypto_sign_open(signed, vk):
+    """Return message given signature+message and the verifying key."""
+    assert len(vk) == PUBLICKEYBYTES    
     sm = ffi.new('unsigned char[]', map(ord, signed))
-    vk = ffi.new('unsigned char[]', map(ord, pk))
+    vk = ffi.new('unsigned char[]', map(ord, vk))
     newmsg = ffi.new('unsigned char[]', len(signed))
     newmsg_len = ffi.new('unsigned long long') # a pointer
     rc = _ed25519.crypto_sign_open(newmsg, newmsg_len, sm, len(sm), vk)
