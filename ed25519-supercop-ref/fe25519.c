@@ -106,7 +106,8 @@ void fe25519_pack(unsigned char r[32], const fe25519 *x)
 
 int fe25519_iszero(const fe25519 *x)
 {
-  int i, r;
+  int i;
+  int r;
   fe25519 t = *x;
   fe25519_freeze(&t);
   r = equal(t.v[0],0);

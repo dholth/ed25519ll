@@ -14,7 +14,7 @@ requires = [ ]
 plat_name = get_platform().replace('-', '_')
 
 setup(name='ed25519ll',
-      version='0.1',
+      version='0.2',
       description='A low-level cffi wrapper for Ed25519 digital signatures.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -42,7 +42,10 @@ setup(name='ed25519ll',
                     "ed25519-supercop-ref/sha512-blocks.c",
                     "ed25519-supercop-ref/sha512-hash.c",
                     "ed25519-supercop-ref/verify.c"],
-              include_dirs = ['ed25519-supercop-ref',]
+              include_dirs = ['ed25519-supercop-ref',],
+              export_symbols = ["crypto_sign",
+                    "crypto_sign_open",
+                    "crypto_sign_publickey"],
           )
       ]
       )

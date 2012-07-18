@@ -17,29 +17,28 @@ static void get_hram(unsigned char *hram, const unsigned char *sm, const unsigne
 }
 
 
-int crypto_sign_publickey(
-    unsigned char *pk,  // write 32 bytes into this
-    unsigned char *sk,  // write 64 bytes into this (seed+pubkey)
-    unsigned char *seed // 32 bytes
+int crypto_sign_keypair(
+    unsigned char *pk,
+    unsigned char *sk,
+	unsigned char *seed
     )
 {
   sc25519 scsk;
   ge25519 gepk;
+  unsigned char extsk[64];
   int i;
 
-  crypto_hash_sha512(sk, seed, 32);
-  sk[0] &= 248;
-  sk[31] &= 127;
-  sk[31] |= 64;
+  crypto_hash_sha512(extsk, seed, 32);
+  extsk[0] &= 248;
+  extsk[31] &= 127;
+  extsk[31] |= 64;
 
-  sc25519_from32bytes(&scsk,sk);
+  sc25519_from32bytes(&scsk,extsk);
   
   ge25519_scalarmult_base(&gepk, &scsk);
   ge25519_pack(pk, &gepk);
   for(i=0;i<32;i++)
     sk[32 + i] = pk[i];
-  for(i=0;i<32;i++)
-    sk[i] = seed[i];
   return 0;
 }
 
@@ -107,6 +106,9 @@ int crypto_sign_open(
   sc25519 schram, scs;
   unsigned char hram[crypto_hash_sha512_BYTES];
 
+  *mlen = (unsigned long long) -1;
+  if (smlen < 64) return -1;
+
   if (ge25519_unpackneg_vartime(&get1, pk)) return -1;
 
   get_hram(hram,sm,pk,m,smlen);
@@ -130,7 +132,6 @@ int crypto_sign_open(
   {
     for(i=0;i<smlen-64;i++)
       m[i] = 0;
-    *mlen = (unsigned long long) -1;
   }
   return ret;
 }

@@ -20,7 +20,7 @@ typedef struct
   fe25519 t;
 } ge25519;
 
-extern const ge25519 ge25519_base;
+const ge25519 ge25519_base;
 
 int ge25519_unpackneg_vartime(ge25519 *r, const unsigned char p[32]);
 
