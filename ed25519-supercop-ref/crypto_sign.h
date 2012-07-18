@@ -8,6 +8,5 @@
 extern int crypto_sign(unsigned char *,unsigned long long *,const unsigned char *,unsigned long long,const unsigned char *);
 extern int crypto_sign_open(unsigned char *,unsigned long long *,const unsigned char *,unsigned long long,const unsigned char *);
 extern int crypto_sign_keypair(unsigned char *,unsigned char *,unsigned char *);
-extern int crypto_sign_publickey(unsigned char *pk, unsigned char *sk, unsigned char *seed);
 
 #endif

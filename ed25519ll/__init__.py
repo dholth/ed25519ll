@@ -25,7 +25,7 @@ decl = """
     extern int crypto_sign_open(unsigned char *, unsigned long long *, 
         const unsigned char *, unsigned long long, const unsigned char *);
     
-    extern int crypto_sign_publickey(unsigned char *pk, unsigned char *sk, 
+    extern int crypto_sign_keypair(unsigned char *pk, unsigned char *sk, 
         unsigned char *seed);
 """
         
@@ -49,8 +49,9 @@ pk = ffi.new('unsigned char[32]')
 sk = ffi.new('unsigned char[64]')
 s = ffi.new('unsigned char[32]', map(ord, seed))
 
-# generate public and signing key from seed (only necessary to store seed)
-rc = ed25519.crypto_sign_publickey(pk, sk, s)
+# generate public and signing key from seed (should save pk, sk; not
+# guaranteed to derive keys the same way in the future)
+rc = ed25519.crypto_sign_keypair(pk, sk, s)
 
 message = b'Mares eat oats'
 msg = ffi.new('unsigned char[]', map(ord, message))
