@@ -54,7 +54,7 @@ Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 
 def crypto_sign_keypair(seed=None):
     """Return (verifying, secret) key from a given seed, or os.urandom(32)"""
-    pk = ffi.new('unsigned char[32]')
+    vk = ffi.new('unsigned char[32]')
     sk = ffi.new('unsigned char[64]')
     if seed is None:
         seed = os.urandom(PUBLICKEYBYTES)
@@ -64,10 +64,10 @@ def crypto_sign_keypair(seed=None):
     if len(seed) != 32:
         raise ValueError("seed must be 32 random bytes or None.")
     s = ffi.new('unsigned char[32]', map(ord, seed))
-    rc = _ed25519.crypto_sign_keypair(pk, sk, s)
+    rc = _ed25519.crypto_sign_keypair(vk, sk, s)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
-    return Keypair(_ffi_tobytes(pk, len(pk)), _ffi_tobytes(sk, len(sk)))
+    return Keypair(_ffi_tobytes(vk, len(vk)), _ffi_tobytes(sk, len(sk)))
 
 
 def crypto_sign(msg, sk):
