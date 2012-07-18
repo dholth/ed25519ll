@@ -7,10 +7,7 @@ import os.path
 import pkg_resources
 from distutils.util import get_platform
 from collections import namedtuple
-try:
-    import sysconfig
-except ImportError: # pragma no cover
-    from distutils import sysconfig
+from distutils import sysconfig
     
 __all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair', 'Keypair',
            'PUBLICKEYBYTES', 'SECRETKEYBYTES', 'SIGNATUREBYTES']
