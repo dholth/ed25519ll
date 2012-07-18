@@ -27,3 +27,6 @@ def test_cover_warn_seed():
 @raises(ValueError)
 def test_bad_seed_size():
     ed25519ll.crypto_sign_keypair('*'*31)
+
+if __name__ == "__main__":
+    test_ed25519ll()

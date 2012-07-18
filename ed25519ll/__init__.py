@@ -45,7 +45,11 @@ SECRETKEYBYTES=64
 SIGNATUREBYTES=64
 
 def _ffi_tobytes(c, size):
-    return bytes(ffi.buffer(c, size))
+    a = []
+    for i in range(size):
+        a.append(chr(c[i]))
+    return b''.join(a)
+    # return bytes(ffi.buffer(c, size))
 
 Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 
@@ -75,7 +79,7 @@ def crypto_sign(msg, sk):
     sk = ffi.new('unsigned char[]', map(ord, sk))
     m = ffi.new('unsigned char[]', map(ord, msg))
     sig_and_msg = ffi.new('unsigned char[]', (len(msg) + SIGNATUREBYTES))
-    sig_and_msg_len = ffi.new('unsigned long long')
+    sig_and_msg_len = ffi.new('unsigned long long[1]')
     rc = _ed25519.crypto_sign(sig_and_msg, sig_and_msg_len, m, len(m), sk)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
@@ -88,7 +92,7 @@ def crypto_sign_open(signed, vk):
     sm = ffi.new('unsigned char[]', map(ord, signed))
     vk = ffi.new('unsigned char[]', map(ord, vk))
     newmsg = ffi.new('unsigned char[]', len(signed))
-    newmsg_len = ffi.new('unsigned long long') # a pointer
+    newmsg_len = ffi.new('unsigned long long[1]')
     rc = _ed25519.crypto_sign_open(newmsg, newmsg_len, sm, len(sm), vk)
     if rc != 0:
         raise ValueError("rc != 0", rc)    
