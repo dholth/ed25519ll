@@ -9,8 +9,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = [ ]
-
 plat_name = get_platform().replace('-', '_')
 
 setup(name='ed25519ll',
@@ -30,8 +28,8 @@ setup(name='ed25519ll',
       packages=['ed25519ll'],
       include_package_data=True,
       zip_safe=False,
-      install_requires = ['setuptools'],
-      tests_require = requires,
+      install_requires = ['cffi'],
+      tests_require = ['nose'],
       test_suite = 'nose.collector',
       ext_modules=[
           Extension('ed25519ll._ed25519_%s' % plat_name,

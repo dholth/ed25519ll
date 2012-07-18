@@ -1,3 +1,8 @@
+0.2
+===
+- 100% test coverage
+- Basic documentation
+
 0.1
 ===
 
