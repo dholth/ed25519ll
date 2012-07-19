@@ -45,11 +45,7 @@ SECRETKEYBYTES=64
 SIGNATUREBYTES=64
 
 def _ffi_tobytes(c, size):
-    a = []
-    for i in range(size):
-        a.append(chr(c[i]))
-    return b''.join(a)
-    # return bytes(ffi.buffer(c, size))
+    return b''.join(chr(c[i]) for i in range(size))
 
 Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 
