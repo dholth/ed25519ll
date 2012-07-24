@@ -5,6 +5,7 @@ syntax:glob
 *.o
 *.so
 *.egg-info/*
+*.gch
 _build/*
 build/*
 dist
