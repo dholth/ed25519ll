@@ -84,7 +84,7 @@ def crypto_sign(msg, sk):
 
 def crypto_sign_open(signed, vk):
     """Return message given signature+message and the verifying key."""
-    assert len(vk) == PUBLICKEYBYTES    
+    assert len(vk) == PUBLICKEYBYTES
     sm = ffi.new('unsigned char[]', map(ord, signed))
     vk = ffi.new('unsigned char[]', map(ord, vk))
     newmsg = ffi.new('unsigned char[]', len(signed))

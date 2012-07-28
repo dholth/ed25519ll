@@ -20,7 +20,7 @@ ed25519ll is a low-level cffi wrapper for the Ed25519 public key signature
 system. It uses distutils' Extension() to compile a shared library that is not 
 a Python extension module, and then uses cffi to talk to the library.
 
-This wrapper currently exposes only the slow reference implmentation of Ed25519, 
+This wrapper currently exposes only the slow reference implementation of Ed25519, 
 on my 2.6GHz Athlon achieving about 380 signatures/second/core including the wrapper 
 overhead.
 
