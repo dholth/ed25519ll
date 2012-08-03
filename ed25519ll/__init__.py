@@ -5,47 +5,21 @@ import warnings
 import os
 import os.path
 import pkg_resources
-from distutils.util import get_platform
 from collections import namedtuple
 from distutils import sysconfig
-    
+
 __all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair', 'Keypair',
            'PUBLICKEYBYTES', 'SECRETKEYBYTES', 'SIGNATUREBYTES']
 
-from cffi import FFI
-ffi = FFI()
-
-decl = """
-    extern int crypto_sign(unsigned char *, unsigned long long *,
-        const unsigned char *, unsigned long long, const unsigned char *);
-    
-    extern int crypto_sign_open(unsigned char *, unsigned long long *, 
-        const unsigned char *, unsigned long long, const unsigned char *);
-    
-    extern int crypto_sign_keypair(unsigned char *pk, unsigned char *sk, 
-        unsigned char *seed);
-"""
-
-ffi.cdef(decl)
-
-verify = False
-
-if not verify:    
-    plat_name = get_platform().replace('-', '_')
-    so_suffix = sysconfig.get_config_var('SO')
-    lib_filename = pkg_resources.resource_filename('ed25519ll', '_ed25519_%s%s' %
-                                                   (plat_name, so_suffix))
-    _ed25519 = ffi.dlopen(os.path.abspath(lib_filename))
-else: # pragma no cover
-    # set LIBRARY_PATH to pwd or use -L
-    _ed25519 = ffi.verify(decl, libraries=["ed25519"]) # library_dirs = []
+from . import _ed25519
+ffi = _ed25519.ffi
 
 PUBLICKEYBYTES=32
 SECRETKEYBYTES=64
 SIGNATUREBYTES=64
 
 def _ffi_tobytes(c, size):
-    return b''.join(chr(c[i]) for i in range(size))
+    return _ed25519.ffi.buffer(c)[:size]
 
 Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 

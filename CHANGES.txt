@@ -1,3 +1,9 @@
+0.3
+===
+- Switch to supercop-ref10
+- Switch to ffi.verify()
+- Add build_ed25519_ref10.py to build shared library
+
 0.2
 ===
 - 100% test coverage

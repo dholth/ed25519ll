@@ -1,5 +1,6 @@
 import os
 import sys
+import ed25519ll
 
 from setuptools import setup, find_packages
 from distutils.core import Extension
@@ -28,23 +29,10 @@ setup(name='ed25519ll',
       packages=['ed25519ll'],
       include_package_data=True,
       zip_safe=False,
+      setup_requires = ['cffi', 'platformer'],
       install_requires = ['cffi'],
       tests_require = ['nose'],
       test_suite = 'nose.collector',
-      ext_modules=[
-          Extension('ed25519ll._ed25519_%s' % plat_name,
-              sources = ["ed25519-supercop-ref/ed25519.c",
-                    "ed25519-supercop-ref/fe25519.c",
-                    "ed25519-supercop-ref/ge25519.c",
-                    "ed25519-supercop-ref/sc25519.c",
-                    "ed25519-supercop-ref/sha512-blocks.c",
-                    "ed25519-supercop-ref/sha512-hash.c",
-                    "ed25519-supercop-ref/verify.c"],
-              include_dirs = ['ed25519-supercop-ref',],
-              export_symbols = ["crypto_sign",
-                    "crypto_sign_open",
-                    "crypto_sign_publickey"],
-          )
-      ]
+      ext_modules=[ed25519ll._ed25519.ffi.verifier.get_extension()],
       )
 
