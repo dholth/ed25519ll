@@ -19,7 +19,15 @@ SECRETKEYBYTES=64
 SIGNATUREBYTES=64
 
 def _ffi_tobytes(c, size):
-    return _ed25519.ffi.buffer(c)[:size]
+    return ffi.string(c, size)
+
+try: # Convert bytes (str) to a list of integers 
+    unicode
+    def numlist(b):
+        return map(ord, b)
+except NameError:
+    def numlist(b):
+        return list(b)
 
 Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 
@@ -34,7 +42,7 @@ def crypto_sign_keypair(seed=None):
                       RuntimeWarning)
     if len(seed) != 32:
         raise ValueError("seed must be 32 random bytes or None.")
-    s = ffi.new('unsigned char[32]', map(ord, seed))
+    s = ffi.new('unsigned char[32]', numlist(seed))
     rc = _ed25519.crypto_sign_keypair(vk, sk, s)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
@@ -46,8 +54,8 @@ def crypto_sign(msg, sk):
     The signature is the first SIGNATUREBYTES bytes of the return value.
     A copy of msg is in the remainder."""
     assert len(sk) == SECRETKEYBYTES
-    sk = ffi.new('unsigned char[]', map(ord, sk))
-    m = ffi.new('unsigned char[]', map(ord, msg))
+    sk = ffi.new('unsigned char[]', numlist(sk))
+    m = ffi.new('unsigned char[]', numlist(msg))
     sig_and_msg = ffi.new('unsigned char[]', (len(msg) + SIGNATUREBYTES))
     sig_and_msg_len = ffi.new('unsigned long long[1]')
     rc = _ed25519.crypto_sign(sig_and_msg, sig_and_msg_len, m, len(m), sk)
@@ -59,8 +67,8 @@ def crypto_sign(msg, sk):
 def crypto_sign_open(signed, vk):
     """Return message given signature+message and the verifying key."""
     assert len(vk) == PUBLICKEYBYTES
-    sm = ffi.new('unsigned char[]', map(ord, signed))
-    vk = ffi.new('unsigned char[]', map(ord, vk))
+    sm = ffi.new('unsigned char[]', numlist(signed))
+    vk = ffi.new('unsigned char[]', numlist(vk))
     newmsg = ffi.new('unsigned char[]', len(signed))
     newmsg_len = ffi.new('unsigned long long[1]')
     rc = _ed25519.crypto_sign_open(newmsg, newmsg_len, sm, len(sm), vk)

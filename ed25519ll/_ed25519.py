@@ -38,11 +38,7 @@ else:
     srcdir = os.path.join(library_dir, '..', 'ed25519-supercop-ref10')
     sources  = glob.glob(os.path.join(srcdir, '*.c'))
     include_dirs = [srcdir]
-    _ed25519 = ffi.verify(decl, 
-#                          libraries=["%s_ed25519_%s%s" % (so_prefix,
-#                                                          plat_name,
-#                                                          so_suffix)],
-#                          library_dirs=[library_dir],
+    _ed25519 = ffi.verify(decl,
                           export_symbols=["crypto_sign",
                                           "crypto_sign_open",
                                           "crypto_sign_keypair"],

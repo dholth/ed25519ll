@@ -22,11 +22,11 @@ def test_ed25519ll():
     ed25519ll.crypto_sign_open(signed, kp.vk)
     
 def test_cover_warn_seed():
-    ed25519ll.crypto_sign_keypair('*'*32)
+    ed25519ll.crypto_sign_keypair(b'*'*32)
     
 @raises(ValueError)
 def test_bad_seed_size():
-    ed25519ll.crypto_sign_keypair('*'*31)
+    ed25519ll.crypto_sign_keypair(b'*'*31)
 
 if __name__ == "__main__":
     test_ed25519ll()
