@@ -18,17 +18,18 @@ PUBLICKEYBYTES=32
 SECRETKEYBYTES=64
 SIGNATUREBYTES=64
 
-def _ffi_tobytes(c, size):
-    return ffi.string(c, size)
-
-try: # Convert bytes (str) to a list of integers 
+try: # Convert bytes (str) to a list of integers # pragma nocover 
     unicode
     def numlist(b):
-        return map(ord, b)
+        return map(ord, b)        
+    def _ffi_tobytes(c, size):
+        return ffi.buffer(c)[:size]
 except NameError:
     def numlist(b):
         return list(b)
-
+    def _ffi_tobytes(c, size):
+        return ffi.buffer(c).tobytes()[:size]
+    
 Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 
 def crypto_sign_keypair(seed=None):
@@ -46,7 +47,7 @@ def crypto_sign_keypair(seed=None):
     rc = _ed25519.crypto_sign_keypair(vk, sk, s)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
-    return Keypair(_ffi_tobytes(vk, len(vk)), _ffi_tobytes(sk, len(sk)))
+    return Keypair(_ffi_tobytes(vk, 32), _ffi_tobytes(sk, 64))
 
 
 def crypto_sign(msg, sk):
