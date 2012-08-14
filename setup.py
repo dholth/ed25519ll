@@ -1,7 +1,7 @@
 import os
 import sys
 import glob
-import ed25519ll
+# import ed25519ll
 
 from setuptools import setup, find_packages
 from distutils.core import Extension
@@ -35,13 +35,13 @@ setup(name='ed25519ll',
       tests_require = ['nose'],
       test_suite = 'nose.collector',
       ext_modules=[
+                   # ed25519ll._ed25519.ffi.verifier.get_extension(),
                    Extension('ed25519ll._ed25519_%s' % plat_name,
                              sources=glob.glob('ed25519-supercop-ref10/*.c'),
                              include_dirs = ['ed25519-supercop-ref10',],
                              export_symbols=["crypto_sign",
                                              "crypto_sign_open",
                                              "crypto_sign_keypair"],),
-                   ed25519ll._ed25519.ffi.verifier.get_extension(),
                    ],
       )
 
