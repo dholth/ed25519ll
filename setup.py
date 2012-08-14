@@ -41,7 +41,8 @@ setup(name='ed25519ll',
                              include_dirs = ['ed25519-supercop-ref10',],
                              export_symbols=["crypto_sign",
                                              "crypto_sign_open",
-                                             "crypto_sign_keypair"],),
+                                             "crypto_sign_keypair"],
+                             compile_extra=['-march=native']),
                    ],
       )
 
