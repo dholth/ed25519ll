@@ -1,9 +1,11 @@
 import pkg_resources
 import sysconfig
 import os.path
+import glob
 
 from distutils.util import get_platform
 from cffi import FFI
+from distutils.extension import Extension
 ffi = FFI()
 
 decl = """
@@ -33,14 +35,20 @@ else:
     so_prefix = ""
     if os.name == "posix":
         so_prefix = ":" # to link with libraries without 'lib' prefix
+    srcdir = os.path.join(library_dir, '..', 'ed25519-supercop-ref10')
+    sources  = glob.glob(os.path.join(srcdir, '*.c'))
+    include_dirs = [srcdir]
     _ed25519 = ffi.verify(decl, 
-                          libraries=["%s_ed25519_%s%s" % (so_prefix,
-                                                          plat_name,
-                                                          so_suffix)],
-                          library_dirs=[library_dir],
+#                          libraries=["%s_ed25519_%s%s" % (so_prefix,
+#                                                          plat_name,
+#                                                          so_suffix)],
+#                          library_dirs=[library_dir],
                           export_symbols=["crypto_sign",
                                           "crypto_sign_open",
-                                          "crypto_sign_keypair"])
+                                          "crypto_sign_keypair"],
+                          include_dirs=[srcdir],
+                          sources=sources,
+                          )
 
 crypto_sign_keypair = _ed25519.crypto_sign_keypair
 crypto_sign = _ed25519.crypto_sign
