@@ -35,7 +35,7 @@ else:
     so_prefix = ""
     if os.name == "posix":
         so_prefix = ":" # to link with libraries without 'lib' prefix
-    srcdir = os.path.join(library_dir, '..', 'ed25519-supercop-ref10')
+    srcdir = os.path.join('..', 'ed25519-supercop-ref10')
     sources  = glob.glob(os.path.join(srcdir, '*.c'))
     include_dirs = [srcdir]
     _ed25519 = ffi.verify(decl,
