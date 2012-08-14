@@ -17,15 +17,12 @@ About ed25519ll
 ===============
 
 ed25519ll is a low-level cffi wrapper for the Ed25519 public key signature
-system. It uses platformer to compile a shared library that is not a
+system. It uses Extension() to compile a shared library that is not a
 Python extension module, and then uses cffi to talk to the library.
 
 This wrapper currently exposes the supercop-ref10 implementation of
 Ed25519, on my 2.6GHz Athlon achieving about 7200 signatures/second/core
 and 2900 verifications/second/core including the wrapper overhead.
-
-As of version 0.3, ed25519ll cannot be built automatically by pip, as the 
-ed25519 shared library build script (included) is not integrated into setup.py
 
 Example::
     
