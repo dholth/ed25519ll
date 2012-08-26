@@ -1,11 +1,9 @@
 import pkg_resources
 import sysconfig
 import os.path
-import glob
 
 from distutils.util import get_platform
 from cffi import FFI
-from distutils.extension import Extension
 ffi = FFI()
 
 decl = """
@@ -21,7 +19,7 @@ decl = """
 
 ffi.cdef(decl)
 
-verify = True
+verify = False
 
 plat_name = get_platform().replace('-', '_')
 so_suffix = sysconfig.get_config_var('SO')
@@ -31,7 +29,7 @@ if not verify: # pragma no cover
                                                    '_ed25519_%s%s' %
                                                    (plat_name, so_suffix))
     _ed25519 = ffi.dlopen(os.path.abspath(lib_filename))
-else:
+else: # pragma nocover
     so_prefix = ""
     if os.name == "posix":
         so_prefix = ":" # to link with libraries without 'lib' prefix

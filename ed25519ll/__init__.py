@@ -24,7 +24,7 @@ try: # Convert bytes (str) to a list of integers # pragma nocover
         return map(ord, b)        
     def _ffi_tobytes(c, size):
         return ffi.buffer(c)[:size]
-except NameError:
+except NameError: # pragma nocover
     def numlist(b):
         return list(b)
     def _ffi_tobytes(c, size):
