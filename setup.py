@@ -13,8 +13,8 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 plat_name = get_platform().replace('-', '_')
 
 setup(name='ed25519ll',
-      version='0.4',
-      description='A low-level cffi wrapper for Ed25519 digital signatures.',
+      version='0.5',
+      description='A low-level ctypes wrapper for Ed25519 digital signatures.',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Development Status :: 4 - Beta",
@@ -30,8 +30,6 @@ setup(name='ed25519ll',
       packages=['ed25519ll'],
       include_package_data=True,
       zip_safe=False,
-      setup_requires=['cffi'],
-      install_requires=['cffi'],
       tests_require=['nose'],
       test_suite='nose.collector',
       ext_modules=[

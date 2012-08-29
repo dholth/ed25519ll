@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import warnings
@@ -7,35 +6,30 @@ import os.path
 import pkg_resources
 from collections import namedtuple
 from distutils import sysconfig
+from distutils.util import get_platform
+import ctypes
 
 __all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair', 'Keypair',
            'PUBLICKEYBYTES', 'SECRETKEYBYTES', 'SIGNATUREBYTES']
 
-from . import _ed25519
-ffi = _ed25519.ffi
+plat_name = get_platform().replace('-', '_')
+so_suffix = sysconfig.get_config_var('SO')
+lib_filename = pkg_resources.resource_filename('ed25519ll', 
+                                               '_ed25519_%s%s' %
+                                               (plat_name, so_suffix))
+
+_ed25519 = ctypes.cdll.LoadLibrary(os.path.abspath(lib_filename))
 
 PUBLICKEYBYTES=32
 SECRETKEYBYTES=64
 SIGNATUREBYTES=64
-
-try: # Convert bytes (str) to a list of integers # pragma nocover 
-    unicode
-    def numlist(b):
-        return map(ord, b)        
-    def _ffi_tobytes(c, size):
-        return ffi.buffer(c)[:size]
-except NameError: # pragma nocover
-    def numlist(b):
-        return list(b)
-    def _ffi_tobytes(c, size):
-        return ffi.buffer(c).tobytes()[:size]
     
 Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
 
 def crypto_sign_keypair(seed=None):
     """Return (verifying, secret) key from a given seed, or os.urandom(32)"""
-    vk = ffi.new('unsigned char[32]')
-    sk = ffi.new('unsigned char[64]')
+    vk = ctypes.create_string_buffer(PUBLICKEYBYTES)
+    sk = ctypes.create_string_buffer(SECRETKEYBYTES)
     if seed is None:
         seed = os.urandom(PUBLICKEYBYTES)
     else:
@@ -43,11 +37,11 @@ def crypto_sign_keypair(seed=None):
                       RuntimeWarning)
     if len(seed) != 32:
         raise ValueError("seed must be 32 random bytes or None.")
-    s = ffi.new('unsigned char[32]', numlist(seed))
+    s = ctypes.c_char_p(seed)
     rc = _ed25519.crypto_sign_keypair(vk, sk, s)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
-    return Keypair(_ffi_tobytes(vk, 32), _ffi_tobytes(sk, 64))
+    return Keypair(vk.value, sk.value)
 
 
 def crypto_sign(msg, sk):
@@ -55,25 +49,29 @@ def crypto_sign(msg, sk):
     The signature is the first SIGNATUREBYTES bytes of the return value.
     A copy of msg is in the remainder."""
     assert len(sk) == SECRETKEYBYTES
-    sk = ffi.new('unsigned char[]', numlist(sk))
-    m = ffi.new('unsigned char[]', numlist(msg))
-    sig_and_msg = ffi.new('unsigned char[]', (len(msg) + SIGNATUREBYTES))
-    sig_and_msg_len = ffi.new('unsigned long long[1]')
-    rc = _ed25519.crypto_sign(sig_and_msg, sig_and_msg_len, m, len(m), sk)
+    sk = ctypes.create_string_buffer(sk, SECRETKEYBYTES) # const
+    m = ctypes.create_string_buffer(msg, len(msg)) # const
+    sig_and_msg = ctypes.create_string_buffer(len(msg) + SIGNATUREBYTES) # out
+    sig_and_msg_len = ctypes.c_ulonglong() # out
+    rc = _ed25519.crypto_sign(sig_and_msg,
+                              ctypes.byref(sig_and_msg_len),
+                              m, ctypes.c_ulonglong(len(m)),
+                              sk)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
-    return _ffi_tobytes(sig_and_msg, sig_and_msg_len[0])
+    return sig_and_msg.value[:sig_and_msg_len.value]
 
 
 def crypto_sign_open(signed, vk):
     """Return message given signature+message and the verifying key."""
     assert len(vk) == PUBLICKEYBYTES
-    sm = ffi.new('unsigned char[]', numlist(signed))
-    vk = ffi.new('unsigned char[]', numlist(vk))
-    newmsg = ffi.new('unsigned char[]', len(signed))
-    newmsg_len = ffi.new('unsigned long long[1]')
-    rc = _ed25519.crypto_sign_open(newmsg, newmsg_len, sm, len(sm), vk)
+    sm = ctypes.create_string_buffer(signed, len(signed)) # const
+    vk = ctypes.create_string_buffer(vk, len(vk)) # const
+    newmsg = ctypes.create_string_buffer(len(signed)) # out
+    newmsg_len = ctypes.c_ulonglong() # out
+    rc = _ed25519.crypto_sign_open(newmsg, ctypes.byref(newmsg_len), 
+                                   sm, len(sm), vk)
     if rc != 0:
         raise ValueError("rc != 0", rc)    
-    return _ffi_tobytes(newmsg, newmsg_len[0])
+    return newmsg.value[:newmsg_len.value]
 
