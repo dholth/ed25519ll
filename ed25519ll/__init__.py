@@ -14,11 +14,10 @@ __all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair', 'Keypair',
 
 plat_name = get_platform().replace('-', '_')
 so_suffix = sysconfig.get_config_var('SO')
-lib_filename = pkg_resources.resource_filename('ed25519ll', 
-                                               '_ed25519_%s%s' %
-                                               (plat_name, so_suffix))
+lib_filename = '_ed25519_%s%s' % (plat_name, so_suffix)
 
-_ed25519 = ctypes.cdll.LoadLibrary(os.path.abspath(lib_filename))
+_ed25519 = ctypes.cdll.LoadLibrary(
+        os.path.abspath(os.path.join(os.path.dirname(__file__), lib_filename)))
 
 PUBLICKEYBYTES=32
 SECRETKEYBYTES=64
@@ -41,14 +40,14 @@ def crypto_sign_keypair(seed=None):
     rc = _ed25519.crypto_sign_keypair(vk, sk, s)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
-    return Keypair(vk.value, sk.value)
+    return Keypair(vk.raw, sk.raw)
 
 
 def crypto_sign(msg, sk):
     """Return signature+message given message and secret key.
     The signature is the first SIGNATUREBYTES bytes of the return value.
     A copy of msg is in the remainder."""
-    assert len(sk) == SECRETKEYBYTES
+    assert len(sk) == SECRETKEYBYTES, len(sk)
     sk = ctypes.create_string_buffer(sk, SECRETKEYBYTES) # const
     m = ctypes.create_string_buffer(msg, len(msg)) # const
     sig_and_msg = ctypes.create_string_buffer(len(msg) + SIGNATUREBYTES) # out
@@ -59,7 +58,7 @@ def crypto_sign(msg, sk):
                               sk)
     if rc != 0: # pragma no cover (no other return statement in C)
         raise ValueError("rc != 0", rc)
-    return sig_and_msg.value[:sig_and_msg_len.value]
+    return sig_and_msg.raw[:sig_and_msg_len.value]
 
 
 def crypto_sign_open(signed, vk):
@@ -73,5 +72,5 @@ def crypto_sign_open(signed, vk):
                                    sm, len(sm), vk)
     if rc != 0:
         raise ValueError("rc != 0", rc)    
-    return newmsg.value[:newmsg_len.value]
+    return newmsg.raw[:newmsg_len.value]
 
