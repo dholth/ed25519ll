@@ -49,7 +49,7 @@ verifying key.
 ``crypto_sign_keypair()`` returns a new ``Keypair()``. ``os.urandom()`` is used
 as the random seed. This operation is about as fast as signing.
 
-``crypto_sign(msg, sk)`` taken a message (any binary string) and a 64-byte 
+``crypto_sign(msg, sk)`` takes a message (any binary string) and a 64-byte 
 signing key (from crypto_sign_keypair()) and returns a signed message.
 
 ``crypto_sign_open(signed, vk)`` takes a signed message (64 byte signature + 
