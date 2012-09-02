@@ -35,3 +35,24 @@ Example::
     verified = ed25519ll.crypto_sign_open(signed, kp.vk)
     assert verified == msg  # but ValueError is raised for bad signatures 
 
+API
+===
+
+ed25519ll exposes the supercop-ref10 API rather directly. All messages and keys
+are binary strings (bytes() or Python 2 str()). Signed messages consist of the
+64 signature bytes concatenated with the message.
+
+``Keypair()`` is a named tuple ``(vk, sk)`` of the verifying key (32 bytes) and
+the signing key (64 bytes). The second half of the signing key is a copy of the
+verifying key.
+
+``crypto_sign_keypair()`` returns a new ``Keypair()``. ``os.urandom()`` is used
+as the random seed. This operation is about as fast as signing.
+
+``crypto_sign(msg, sk)`` taken a message (any binary string) and a 64-byte 
+signing key (from crypto_sign_keypair()) and returns a signed message.
+
+``crypto_sign_open(signed, vk)`` takes a signed message (64 byte signature + 
+message) and the corresponding 32-byte verifying key and returns a copy of the
+message without the attached signature. ``ValueError`` is raised for invalid
+signatures.
