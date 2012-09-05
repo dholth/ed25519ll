@@ -47,7 +47,8 @@ def crypto_sign(msg, sk):
     """Return signature+message given message and secret key.
     The signature is the first SIGNATUREBYTES bytes of the return value.
     A copy of msg is in the remainder."""
-    assert len(sk) == SECRETKEYBYTES, len(sk)
+    if len(sk) != SECRETKEYBYTES:
+        raise ValueError("Bad signing key length %d" % len(sk))
     sk = ctypes.create_string_buffer(sk, SECRETKEYBYTES) # const
     m = ctypes.create_string_buffer(msg, len(msg)) # const
     sig_and_msg = ctypes.create_string_buffer(len(msg) + SIGNATUREBYTES) # out
@@ -63,12 +64,13 @@ def crypto_sign(msg, sk):
 
 def crypto_sign_open(signed, vk):
     """Return message given signature+message and the verifying key."""
-    assert len(vk) == PUBLICKEYBYTES
+    if len(vk) != PUBLICKEYBYTES:
+        raise ValueError("Bad verifying key length %d" % len(vk))
     sm = ctypes.create_string_buffer(signed, len(signed)) # const
     vk = ctypes.create_string_buffer(vk, len(vk)) # const
     newmsg = ctypes.create_string_buffer(len(signed)) # out
     newmsg_len = ctypes.c_ulonglong() # out
-    rc = _ed25519.crypto_sign_open(newmsg, ctypes.byref(newmsg_len), 
+    rc = _ed25519.crypto_sign_open(newmsg, ctypes.pointer(newmsg_len), 
                                    sm, len(sm), vk)
     if rc != 0:
         raise ValueError("rc != 0", rc)    

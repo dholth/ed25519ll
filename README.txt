@@ -19,7 +19,7 @@ About ed25519ll
 ed25519ll is a low-level wrapper for the Ed25519 public key signature
 system. It uses Extension() to compile a shared library that is not a
 Python extension module, and then uses ctypes to talk to the library. With
-luck, it will only be necessary to compile ed25519ll once for each
+luck it will only be necessary to compile ed25519ll once for each
 platform, reusing its shared library across Python versions.
 
 This wrapper currently exposes the supercop-ref10 implementation of
