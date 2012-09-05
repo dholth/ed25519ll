@@ -19,8 +19,12 @@ plat_name = get_platform().replace('-', '_')
 so_suffix = sysconfig.get_config_var('SO')
 lib_filename = '_ed25519_%s%s' % (plat_name, so_suffix)
 
-_ed25519 = ctypes.cdll.LoadLibrary(
-        os.path.abspath(os.path.join(os.path.dirname(__file__), lib_filename)))
+try:
+    _ed25519 = ctypes.cdll.LoadLibrary(
+            os.path.abspath(os.path.join(os.path.dirname(__file__), lib_filename)))
+except OSError as e:
+    warnings.warn("Ed25519 LoadLibrary fail:\n{}".format(e))
+    raise ImportError(str(e))
 
 PUBLICKEYBYTES=32
 SECRETKEYBYTES=64
