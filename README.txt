@@ -26,9 +26,9 @@ This wrapper currently exposes the supercop-ref10 implementation of
 Ed25519, on my 2.6GHz Athlon achieving about 7200 signatures/second/core
 and 2900 verifications/second/core including the wrapper overhead.
 
-This wrapper also contains a pure-Python fallback. Unlike the reference
-implementation, the Python implementation does not contain protection
-against timing attacks.
+This wrapper also contains a reasonably performat pure-Python
+fallback. Unlike the reference implementation, the Python implementation
+does not contain protection against timing attacks.
 
 Example::
     
