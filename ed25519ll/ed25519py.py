@@ -2,8 +2,6 @@
 
 import warnings
 import os
-from collections import namedtuple
-import ctypes
 
 import ed25519ll
 from ed25519ll import djbec
@@ -14,8 +12,6 @@ __all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair', 'Keypair',
 PUBLICKEYBYTES=32
 SECRETKEYBYTES=64
 SIGNATUREBYTES=64
-
-Keypair = ed25519ll.Keypair
 
 def crypto_sign_keypair(seed=None):
     """Return (verifying, secret) key from a given seed, or os.urandom(32)"""    
@@ -29,7 +25,7 @@ def crypto_sign_keypair(seed=None):
     # XXX should seed be constrained to be less than 2**255-19?
     skbytes = seed
     vkbytes = djbec.publickey(skbytes)
-    return Keypair(vkbytes, skbytes+vkbytes)
+    return ed25519ll.Keypair(vkbytes, skbytes+vkbytes)
 
 
 def crypto_sign(msg, sk):
