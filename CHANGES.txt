@@ -1,3 +1,7 @@
+0.6
+===
+- Include pure-Python fallback implementation
+
 0.5
 ===
 - Switch to ctypes to avoid parser overhead for such a trivial library

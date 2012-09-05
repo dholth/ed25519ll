@@ -13,7 +13,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 plat_name = get_platform().replace('-', '_')
 
 setup(name='ed25519ll',
-      version='0.5',
+      version='0.6',
       description='A low-level ctypes wrapper for Ed25519 digital signatures.',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
