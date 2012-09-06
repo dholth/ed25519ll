@@ -46,5 +46,10 @@ def test_bad_seed_size():
 def inner_bad_seed_size(ed25519ll):
     ed25519ll.crypto_sign_keypair(b'*'*31)
 
+def test_djbec():
+    from . import djbec
+    djbec.dsa_test()
+    djbec.dh_test()
+
 if __name__ == "__main__":
     test_ed25519ll()

@@ -22,7 +22,7 @@ lib_filename = '_ed25519_%s%s' % (plat_name, so_suffix)
 try:
     _ed25519 = ctypes.cdll.LoadLibrary(
             os.path.abspath(os.path.join(os.path.dirname(__file__), lib_filename)))
-except OSError as e:
+except OSError as e: # pragma nocover
     warnings.warn("Ed25519 LoadLibrary fail:\n{}".format(e))
     raise ImportError(str(e))
 

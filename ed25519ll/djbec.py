@@ -6,6 +6,24 @@
 # http://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html
 # Specifically add-2008-hwcd-4 and dbl-2008-hwcd
 
+try: # pragma nocover
+    unicode
+    PY3 = False
+    def asbytes(b):
+        """Convert array of integers to byte string"""
+        return ''.join(chr(x) for x in b)
+    def bit(h, i):
+        """Return i'th bit of bytestring h"""
+        return (ord(h[i//8]) >> (i%8)) & 1
+
+except NameError:
+    PY3 = True
+    asbytes = bytes
+    def bit(h, i):
+        return (h[i//8] >> (i%8)) & 1
+
+from binascii import hexlify, unhexlify
+
 import hashlib
 
 b = 256
@@ -15,23 +33,23 @@ l = 2**252 + 27742317777372353535851937790883648493
 def H(m):
     return hashlib.sha512(m).digest()
 
-def expmod(b,e,m):
+def expmod(b, e, m):
     if e == 0: return 1
-    t = expmod(b,e/2,m)**2 % m
-    if e & 1: t = (t*b) % m
+    t = expmod(b, e // 2, m) ** 2 % m
+    if e & 1: t = (t * b) % m
     return t
 
 # Can probably get some extra speedup here by replacing this with
 # an extended-euclidean, but performance seems OK without that
 def inv(x):
-    return expmod(x,q-2,q)
+    return expmod(x, q-2, q)
 
 d = -121665 * inv(121666)
-I = expmod(2,(q-1)/4,q)
+I = expmod(2,(q-1)//4,q)
 
 def xrecover(y):
     xx = (y*y-1) * inv(d*y*y+1)
-    x = expmod(xx,(q+3)/8,q)
+    x = expmod(xx,(q+3)//8,q)
     if (x*x - xx) % q != 0: x = (x*I) % q
     if x % 2 != 0: x = q-x
     return x
@@ -40,14 +58,14 @@ By = 4 * inv(5)
 Bx = xrecover(By)
 B = [Bx % q,By % q]
 
-def edwards(P,Q):
-    x1 = P[0]
-    y1 = P[1]
-    x2 = Q[0]
-    y2 = Q[1]
-    x3 = (x1*y2+x2*y1) * inv(1+d*x1*x2*y1*y2)
-    y3 = (y1*y2+x1*x2) * inv(1-d*x1*x2*y1*y2)
-    return (x3 % q,y3 % q)
+#def edwards(P,Q):
+#    x1 = P[0]
+#    y1 = P[1]
+#    x2 = Q[0]
+#    y2 = Q[1]
+#    x3 = (x1*y2+x2*y1) * inv(1+d*x1*x2*y1*y2)
+#    y3 = (y1*y2+x1*x2) * inv(1-d*x1*x2*y1*y2)
+#    return (x3 % q,y3 % q)
 
 #def scalarmult(P,e):
 #    if e == 0: return [0,1]
@@ -111,19 +129,18 @@ def scalarmult(pt, e):
 
 def encodeint(y):
     bits = [(y >> i) & 1 for i in range(b)]
-    return ''.join([chr(sum([bits[i * 8 + j] << j for j in range(8)]))
-                                    for i in range(b/8)])
+    e = [(sum([bits[i * 8 + j] << j for j in range(8)]))
+                                    for i in range(b//8)]
+    return asbytes(e)
 
 def encodepoint(P):
     x = P[0]
     y = P[1]
     bits = [(y >> i) & 1 for i in range(b - 1)] + [x & 1]
-    return ''.join([chr(sum([bits[i * 8 + j] << j for j in range(8)]))
-                                    for i in range(b/8)])
-
-def bit(h,i):
-    return (ord(h[i/8]) >> (i%8)) & 1
-
+    e = [(sum([bits[i * 8 + j] << j for j in range(8)]))
+                                    for i in range(b//8)]
+    return asbytes(e)
+    
 def publickey(sk):
     h = H(sk)
     a = 2**(b-2) + sum(2**i * bit(h,i) for i in range(3,b-2))
@@ -137,7 +154,7 @@ def Hint(m):
 def signature(m,sk,pk):
     h = H(sk)
     a = 2**(b-2) + sum(2**i * bit(h,i) for i in range(3,b-2))
-    r = Hint(''.join([h[i] for i in range(b/8,b/4)]) + m)
+    r = Hint(bytes([h[i] for i in range(b//8,b//4)]) + m)
     R = scalarmult(B,r)
     S = (r + Hint(encodepoint(R) + pk + m) * a) % l
     return encodepoint(R) + encodeint(S)
@@ -158,12 +175,12 @@ def decodepoint(s):
     if not isoncurve(P): raise Exception("decoding point that is not on curve")
     return P
 
-def checkvalid(s,m,pk):
-    if len(s) != b/4: raise Exception("signature length is wrong")
-    if len(pk) != b/8: raise Exception("public-key length is wrong")
-    R = decodepoint(s[0:b/8])
+def checkvalid(s, m, pk):
+    if len(s) != b//4: raise Exception("signature length is wrong")
+    if len(pk) != b//8: raise Exception("public-key length is wrong")
+    R = decodepoint(s[0:b//8])
     A = decodepoint(pk)
-    S = decodeint(s[b/8:b/4])
+    S = decodeint(s[b//8:b//4])
     h = Hint(encodepoint(R) + pk + m)
     v1 = scalarmult(B,S)
 #  v2 = edwards(R,scalarmult(A,h))
@@ -175,22 +192,28 @@ def checkvalid(s,m,pk):
 # Curve25519 reference implementation by Matthew Dempsky, from:
 # http://cr.yp.to/highspeed/naclcrypto-20090310.pdf
 
-P = 2 ** 255 - 19
+# P = 2 ** 255 - 19
+P = q
 A = 486662
-def expmod(b, e, m):
-    if e == 0: return 1
-    t = expmod(b, e / 2, m) ** 2 % m
-    if e & 1: t = (t * b) % m
-    return t
 
-def inv(x): return expmod(x, P - 2, P)
+#def expmod(b, e, m):
+#    if e == 0: return 1
+#    t = expmod(b, e / 2, m) ** 2 % m
+#    if e & 1: t = (t * b) % m
+#    return t
 
-def add((xn,zn), (xm,zm), (xd,zd)):
+# def inv(x): return expmod(x, P - 2, P)
+
+def add(n, m, d):
+    (xn, zn) = n
+    (xm, zm) = m 
+    (xd, zd) = d
     x = 4 * (xm * xn - zm * zn) ** 2 * zd
     z = 4 * (xm * zn - zm * xn) ** 2 * xd
     return (x % P, z % P)
 
-def double((xn,zn)):
+def double(n):
+    (xn, zn) = n
     x = (xn ** 2 - zn ** 2) ** 2
     z = 4 * xn * zn * (xn ** 2 + A * xn * zn + zn ** 2)
     return (x % P, z % P)
@@ -203,7 +226,7 @@ def curve25519(n, base=9):
     # (m+1)th multiple of base.
     def f(m):
         if m == 1: return (one, two)
-        (pm, pm1) = f(m / 2)
+        (pm, pm1) = f(m // 2)
         if (m & 1):
             return (add(pm, pm1, one), double(pm1))
         return (double(pm), add(pm, pm1, one))
@@ -219,17 +242,20 @@ def genkey(n=0):
     n |= 64 << 8 * 31
     return n
 
-def str2int(s):
-    return sum(ord(s[i]) << (8 * i) for i in range(32))
-
-def int2str(n):
-    return ''.join([chr((n >> (8 * i)) & 255) for i in range(32)])
+#def str2int(s):
+#    return int(hexlify(s), 16)
+#    # return sum(ord(s[i]) << (8 * i) for i in range(32))
+#
+#def int2str(n):
+#    return unhexlify("%x" % n)
+#    # return ''.join([chr((n >> (8 * i)) & 255) for i in range(32)])
 
 #################################################
 
 def dsa_test():
-    msg = str(random.randint(q,q+q))
-    sk = str(random.randint(q,q+q))
+    import os
+    msg = str(random.randint(q,q+q)).encode('utf-8')
+    sk = os.urandom(32)
     pk = publickey(sk)
     sig = signature(msg, sk, pk)
     return checkvalid(sig, msg, pk)
