@@ -8,20 +8,21 @@
 
 try: # pragma nocover
     unicode
-
-    raise Exception('Python 2 version is broken, sorry (signatures differ)')
-
     PY3 = False
     def asbytes(b):
         """Convert array of integers to byte string"""
         return ''.join(chr(x) for x in b)
+    def joinbytes(b):
+        """Convert array of bytes to byte string"""
+        return ''.join(b)
     def bit(h, i):
         """Return i'th bit of bytestring h"""
         return (ord(h[i//8]) >> (i%8)) & 1
 
-except NameError:
+except NameError: # pragma nocover
     PY3 = True
     asbytes = bytes
+    joinbytes = bytes
     def bit(h, i):
         return (h[i//8] >> (i%8)) & 1
 
@@ -155,7 +156,8 @@ def Hint(m):
 def signature(m,sk,pk):
     h = H(sk)
     a = 2**(b-2) + sum(2**i * bit(h,i) for i in range(3,b-2))
-    r = Hint(bytes([h[i] for i in range(b//8,b//4)]) + m)
+    inter = joinbytes([h[i] for i in range(b//8,b//4)])
+    r = Hint(inter + m)
     R = scalarmult(B,r)
     S = (r + Hint(encodepoint(R) + pk + m) * a) % l
     return encodepoint(R) + encodeint(S)
