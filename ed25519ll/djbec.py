@@ -8,6 +8,9 @@
 
 try: # pragma nocover
     unicode
+
+    raise Exception('Python 2 version is broken, sorry (signatures differ)')
+
     PY3 = False
     def asbytes(b):
         """Convert array of integers to byte string"""
