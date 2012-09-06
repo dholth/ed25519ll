@@ -22,8 +22,6 @@ except NameError:
     def bit(h, i):
         return (h[i//8] >> (i%8)) & 1
 
-from binascii import hexlify, unhexlify
-
 import hashlib
 
 b = 256
